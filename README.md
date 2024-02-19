@@ -6,5 +6,6 @@ Applying image features of proximal paracancerous tissues in predicting prognosi
 ## Usage 
 ### 1. Segmenting WSI using MSegNet
 ```
-python run.py DIR
+python ./code/MSegNet_seg.py --batch_size 32 --ckpt_L1 ./model/L1_model.pth --ckpt_L2 ./model/L2_model.pth --slide_dir ./data/slide --data_dir ./data/intermediate_data --seg_results_dir ./data/seg_result
 ```
+
