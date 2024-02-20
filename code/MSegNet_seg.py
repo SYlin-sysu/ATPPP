@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 from torch import nn, optim
 from torchvision.transforms import transforms
 from spatial_transforms import (Compose, Normalize, Scale, CenterCrop, ToTensor)
-from dense_unet import DenseUNet
+from models import DenseUNet
 from dataset import LiverDataset_whole
 from tqdm import tqdm
 import openslide
@@ -262,7 +262,6 @@ def DenseUnet_seg(args, slide_path):
     seg_result_merge_path = os.path.join(seg_result_pid_dir, pid+'_seg_result.png')
     plot_pred_merge(seg_result_tissue_path, seg_result_cell_path, seg_result_merge_path)
 
-
 if __name__ == '__main__':
     NUM_CLASSES_L2 = 4
     NUM_CLASSES_L1 = 4
@@ -270,8 +269,8 @@ if __name__ == '__main__':
     parse = argparse.ArgumentParser()
     parse.add_argument("--batch_size", type=int, default=32)
     #parse.add_argument("--device_ids", type=str, default='0')
-    parse.add_argument("--ckpt_L2", type=str, help="the path of the folder of tissue-level segmentation model", default="./model/L2_model.pth")
     parse.add_argument("--ckpt_L1", type=str, help="the path of the folder of cell-level segmentation model", default="./model/L1_model.pth")
+    parse.add_argument("--ckpt_L2", type=str, help="the path of the folder of tissue-level segmentation model", default="./model/L2_model.pth")
     parse.add_argument("--slide_dir", type=str, help="the path of the folder of input WSIs", default="./data/slide")
     parse.add_argument("--data_dir", type=str, help="the path of the folder of intermediate data", default="./data/intermediate_data")
     parse.add_argument("--seg_results_dir", type=str, help="the path of the folder of segmentation result", default="./data/seg_result")
@@ -281,8 +280,7 @@ if __name__ == '__main__':
         slide_path = os.path.join(args.slide_dir, filename)
         pid = os.path.basename(slide_path).split('.')[0]
         print(pid)
-        if pid=='TCGA-2Y-A9GY-01A':
-            continue
         pid_dir = os.path.join(args.data_dir, pid)
         DenseUnet_seg(args, slide_path)
+
 

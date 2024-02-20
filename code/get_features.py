@@ -836,12 +836,14 @@ def get_area_length(contours,class_name,pid,res):
     circularity_list = []
     convexity_list = []
     hu_moments_list = []
+    n=0
     for i, contour in enumerate(contours):
         area = cv2.contourArea(contour)
         if len(contour) < 5:
             continue
         if area<=0:
             continue
+        n+=1
         length = cv2.arcLength(contour, True)
         moments = cv2.moments(contour)
         hu_moments = cv2.HuMoments(moments)
@@ -856,13 +858,14 @@ def get_area_length(contours,class_name,pid,res):
         hull = cv2.convexHull(contour)
         convexity = cv2.contourArea(hull)/area
 
-
         area_list.append(area)
         length_list.append(length)
         eccentricity_list.append(eccentricity)
         circularity_list.append(circularity)
         convexity_list.append(convexity)
         hu_moments_list.append(hu_moments)
+    
+
     if len(area_list)==0 or len(length_list)==0:
         area_list.append(0)
         length_list.append(0)
@@ -948,11 +951,8 @@ def get_shape_features(slide_path, pid_dir, seg_result_dir):
             masks = separate_png(save_L2_path,class_name)
         else:
             masks = separate_png(save_L1_path, class_name)
-        pid = pid.split(' ')[0]
         contours, hireachy = cv2.findContours(masks.astype('uint8'), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        #print(pid, class_name, len(contours))
         res = get_area_length(contours, class_name, pid, res)
-
     res.to_csv(save_path, index=False)
 
 def get_features_table(slide_path, pid_dir, save_csv_path):
@@ -973,7 +973,11 @@ def get_features_table(slide_path, pid_dir, save_csv_path):
     pd_list = []
     for csv_path in csv_path_list:
         csv_df = pd.read_csv(csv_path)
-        pd_list.append(csv_df)
+        if csv_path==shap_features_path:
+            pd_list.append(csv_df)
+        else:
+            pd_list.append(csv_df.iloc[:,1:])
+
     pid_result_df = pd.concat(pd_list, axis=1)
     if not os.path.exists(save_csv_path):
         pid_result_df.to_csv(save_csv_path, index=False)
@@ -994,8 +998,6 @@ if __name__ == '__main__':
     for filename in os.listdir(args.slide_dir):
         slide_path = os.path.join(args.slide_dir, filename)
         pid = os.path.basename(slide_path).split('.')[0]
-        if pid=='TCGA-2Y-A9GY-01A':
-            continue
         pid_dir = os.path.join(args.data_dir, pid)
         pid_seg_result_dir = os.path.join(args.seg_results_dir, pid)
         makedir(pid_dir)
